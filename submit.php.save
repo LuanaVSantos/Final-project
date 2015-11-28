@@ -1,0 +1,60 @@
+<?php
+error_reporting(1);
+ini_set("display_errors", 1);
+
+require 'vendor/autoload.php';
+use Aws\S3\S3Client;
+
+$client = S3Client::factory(array(
+  'version' => 'latest',
+  'region' => 'us-west-2',
+  'credentials' => array(
+	'key'=>'AKIAJPKY6CJYCQADTGGA',
+	'secret'=>'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'
+  )
+));
+
+$bucket_name = 'lukabucket';
+//create a bucket if it doesn't exist
+if(!$client->doesBucketExist('lukabucket')){
+	$client->createBucket(array(
+		'Bucket' => $bucket_name
+	));
+}
+
+$key = 'luka_' . uniqid() . $_FILES['image']['name'];
+
+$result = $client->putObject([
+	'ACL' => 'public-read',
+	'Bucket' => $bucket_name,
+	'ContentType' => $_FILES['image']['type'],
+	'Key' => $key,
+	'SourceFile' => $_FILES['image']['tmp_name']
+]);
+
+//poll the object until it is accessible
+$client->waitUntil('ObjectExists', array(
+	'Bucket' => $bucket_name,
+	'Key' => $key
+));
+
+echo $result['ObjectURL'];
+
+$uname = $_POST['uname'];
+
+$dbh = new PDO('mysql:host=localhost;dbname=mp1','root', 'LukaLuka07');
+
+$query = 'insert into store(uname, timestamp) values(?, now())';
+
+$stmt = $dbh->prepare($query);
+$stmt->bindParam(1, $uname);
+
+if($stmt->execute()){
+	echo 'added';
+	
+}else{
+	echo 'failed';
+}
+
+var_dump(file_put_contents('s3://lukamp1/first', 'Username ' . $uname ));
+
