@@ -9,7 +9,7 @@ $client = S3Client::factory([
 	'version' => 'latest',
 	'region' => 'us-west-2',
 	'credentials' => [
-		'key' => 'AKIAJPKY6CJYCQADTGGA',
+		'key' => 'xxxx',
 		'secret' => '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'
 	]
 ]);
